@@ -58,7 +58,7 @@ if not SECRET_KEY:
     raise ValueError("DJANGO_SECRET_KEY environment variable must be set in production")
 
 # Always allow localhost for local development
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'whale-app-ro8kj.ondigitalocean.app']
+ALLOWED_HOSTS = ['localhost', '127.0.0.1', 'didi-app-feixt.ondigitalocean.app']
 
 # Accept either DJANGO_ALLOWED_HOSTS or ALLOWED_HOSTS (comma-separated)
 allowed_hosts_env = _config_csv(
