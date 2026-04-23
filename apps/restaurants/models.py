@@ -35,8 +35,8 @@ class Restaurant(models.Model):
         ('$$$', 'Expensive'),
         ('$$$$', 'Fine Dining')
     ])
-    opening_hours = models.JSONField(default=dict)
-    features = models.JSONField(default=list)  # ['wifi', 'parking', 'delivery']
+    opening_hours = models.JSONField(default=dict, null=True, blank=True)  # e.g. {"Monday": "9am-9pm", "Tuesday": "9am-9pm", ...}  
+    features = models.JSONField(default=list, null=True, blank=True)  # ['wifi', 'parking', 'delivery']
     delivery_fee = models.DecimalField(max_digits=6, decimal_places=2, default=2.99, help_text="Delivery fee in GHC")
     delivery_time = models.CharField(max_length=50, default="30-45 min", help_text="Estimated delivery time")
     min_order = models.DecimalField(max_digits=8, decimal_places=2, default=15.00, help_text="Minimum order amount in GHC")
