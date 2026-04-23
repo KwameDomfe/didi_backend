@@ -372,6 +372,7 @@ else:
         # Default production origins
         CORS_ALLOWED_ORIGINS = [
             'https://illustrious-gnome-b45018.netlify.app',
+            'https://didi-app-feixt.ondigitalocean.app',
         ]
 
 CSRF_TRUSTED_ORIGINS = _config_csv(
