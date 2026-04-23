@@ -371,7 +371,7 @@ else:
     else:
         # Default production origins
         CORS_ALLOWED_ORIGINS = [
-            'https://illustrious-gnome-b45018.netlify.app',
+            'https://127.0.0.1:8000',
             'https://didi-app-feixt.ondigitalocean.app',
         ]
 
