@@ -1,0 +1,248 @@
+/* Enhanced Admin Styles for Restaurant Management */
+
+/* Allergen Checkboxes Styling */
+.field-allergens ul {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 8px;
+    list-style: none;
+    padding: 15px;
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    margin: 0;
+}
+
+.field-allergens li {
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    background: white;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+}
+
+.field-allergens li:hover {
+    background: #f0f7ff;
+    border-color: #007cba;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.field-allergens input[type="checkbox"] {
+    margin-right: 8px;
+    transform: scale(1.2);
+}
+
+.field-allergens label {
+    font-weight: 500;
+    font-size: 14px;
+    color: #333;
+    cursor: pointer;
+    margin: 0;
+}
+
+/* Ingredients Textarea Styling */
+.field-ingredients textarea {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    border: 2px solid #ddd;
+    border-radius: 8px;
+    padding: 12px;
+    transition: border-color 0.3s ease;
+    resize: vertical;
+    min-height: 80px;
+}
+
+.field-ingredients textarea:focus {
+    outline: none;
+    border-color: #007cba;
+    box-shadow: 0 0 8px rgba(0, 124, 186, 0.2);
+}
+
+/* Fieldset Styling */
+.aligned .collapse {
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin: 15px 0;
+    background: #fafafa;
+}
+
+.aligned .collapse h2 {
+    background: linear-gradient(135deg, #007cba, #005a87);
+    color: white;
+    padding: 12px 20px;
+    margin: 0;
+    border-radius: 7px 7px 0 0;
+    font-size: 16px;
+    font-weight: 500;
+}
+
+.aligned .collapse .module {
+    padding: 20px;
+}
+
+/* Dietary Information Styling */
+.field-is_vegetarian, .field-is_vegan, .field-is_gluten_free {
+    display: inline-block;
+    margin-right: 20px;
+    background: #f0f7ff;
+    padding: 10px 15px;
+    border-radius: 6px;
+    border: 1px solid #b3d9ff;
+}
+
+.field-is_vegetarian label::before {
+    content: "🌱 ";
+}
+
+.field-is_vegan label::before {
+    content: "🌿 ";
+}
+
+.field-is_gluten_free label::before {
+    content: "🚫🌾 ";
+}
+
+/* Spice Level Styling */
+.field-spice_level select {
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    background: white;
+    font-size: 14px;
+    min-width: 120px;
+}
+
+.field-spice_level::after {
+    content: "🌶️";
+    margin-left: 10px;
+    font-size: 18px;
+}
+
+/* Price Field Styling */
+.field-price input {
+    font-size: 16px;
+    font-weight: bold;
+    color: #28a745;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.field-price::before {
+    content: "💰 ";
+    font-size: 18px;
+}
+
+/* Prep Time Styling */
+.field-prep_time input {
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    padding: 8px 12px;
+}
+
+.field-prep_time::after {
+    content: " ⏱️ minutes";
+    margin-left: 10px;
+    color: #666;
+    font-weight: bold;
+}
+
+/* Make help text more prominent */
+.help {
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-top: 5px;
+    font-style: italic;
+    color: #856404;
+}
+
+.help::before {
+    content: "💡 ";
+}
+
+/* Restaurant selector styling */
+.field-restaurant select {
+    font-size: 16px;
+    font-weight: bold;
+    color: #007cba;
+    border: 2px solid #007cba;
+    border-radius: 6px;
+    padding: 10px;
+    background: white;
+}
+
+/* Category selector styling */
+.field-category select {
+    border: 2px solid #28a745;
+    border-radius: 6px;
+    padding: 8px 12px;
+    background: white;
+}
+
+/* Availability toggle styling */
+.field-is_available {
+    background: #d4edda;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #c3e6cb;
+}
+
+.field-is_available input[type="checkbox"] {
+    transform: scale(1.3);
+    margin-right: 10px;
+}
+
+.field-is_available label {
+    font-weight: bold;
+    color: #155724;
+}
+
+.field-is_available label::before {
+    content: "✅ ";
+}
+
+/* Admin list display improvements */
+.admin-list .allergen-display {
+    max-width: 200px;
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+.admin-list .dietary-info {
+    max-width: 150px;
+    font-size: 11px;
+    line-height: 1.3;
+}
+
+/* Form buttons styling */
+.submit-row input[type="submit"] {
+    background: linear-gradient(135deg, #28a745, #20c997);
+    border: none;
+    padding: 12px 25px;
+    border-radius: 6px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.submit-row input[type="submit"]:hover {
+    background: linear-gradient(135deg, #20c997, #28a745);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+/* Responsive improvements */
+@media (max-width: 768px) {
+    .field-allergens ul {
+        grid-template-columns: 1fr;
+    }
+    
+    .nutritional-info-widget {
+        grid-template-columns: 1fr !important;
+    }
+}

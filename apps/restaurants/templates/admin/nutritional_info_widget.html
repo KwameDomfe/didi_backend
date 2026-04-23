@@ -1,0 +1,140 @@
+{% load widget_tweaks %}
+<div class="nutritional-info-widget">
+    <style>
+        .nutritional-info-widget {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            max-width: 600px;
+            padding: 15px;
+            background: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .nutritional-field {
+            display: flex;
+            flex-direction: column;
+        }
+        .nutritional-field label {
+            font-weight: bold;
+            margin-bottom: 5px;
+            color: #333;
+            font-size: 13px;
+        }
+        .nutritional-field input {
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .nutritional-field input:focus {
+            outline: none;
+            border-color: #007cba;
+            box-shadow: 0 0 5px rgba(0, 124, 186, 0.3);
+        }
+        .nutritional-help {
+            grid-column: 1 / -1;
+            font-size: 12px;
+            color: #666;
+            font-style: italic;
+            margin-top: 10px;
+        }
+    </style>
+    
+    <div class="nutritional-field">
+        <label for="{{ widget.attrs.id }}_calories">Calories (kcal):</label>
+        <input type="number" step="1" min="0" max="9999" 
+               name="{{ widget.name }}_calories" 
+               id="{{ widget.attrs.id }}_calories"
+               value="{{ widget.value.calories|default:'' }}" />
+    </div>
+    
+    <div class="nutritional-field">
+        <label for="{{ widget.attrs.id }}_protein">Protein (g):</label>
+        <input type="number" step="0.1" min="0" max="999" 
+               name="{{ widget.name }}_protein" 
+               id="{{ widget.attrs.id }}_protein"
+               value="{{ widget.value.protein|default:'' }}" />
+    </div>
+    
+    <div class="nutritional-field">
+        <label for="{{ widget.attrs.id }}_carbohydrates">Carbohydrates (g):</label>
+        <input type="number" step="0.1" min="0" max="999" 
+               name="{{ widget.name }}_carbohydrates" 
+               id="{{ widget.attrs.id }}_carbohydrates"
+               value="{{ widget.value.carbohydrates|default:'' }}" />
+    </div>
+    
+    <div class="nutritional-field">
+        <label for="{{ widget.attrs.id }}_fat">Total Fat (g):</label>
+        <input type="number" step="0.1" min="0" max="999" 
+               name="{{ widget.name }}_fat" 
+               id="{{ widget.attrs.id }}_fat"
+               value="{{ widget.value.fat|default:'' }}" />
+    </div>
+    
+    <div class="nutritional-field">
+        <label for="{{ widget.attrs.id }}_fiber">Fiber (g):</label>
+        <input type="number" step="0.1" min="0" max="999" 
+               name="{{ widget.name }}_fiber" 
+               id="{{ widget.attrs.id }}_fiber"
+               value="{{ widget.value.fiber|default:'' }}" />
+    </div>
+    
+    <div class="nutritional-field">
+        <label for="{{ widget.attrs.id }}_sodium">Sodium (mg):</label>
+        <input type="number" step="1" min="0" max="99999" 
+               name="{{ widget.name }}_sodium" 
+               id="{{ widget.attrs.id }}_sodium"
+               value="{{ widget.value.sodium|default:'' }}" />
+    </div>
+    
+    <div class="nutritional-field">
+        <label for="{{ widget.attrs.id }}_sugar">Sugar (g):</label>
+        <input type="number" step="0.1" min="0" max="999" 
+               name="{{ widget.name }}_sugar" 
+               id="{{ widget.attrs.id }}_sugar"
+               value="{{ widget.value.sugar|default:'' }}" />
+    </div>
+    
+    <div class="nutritional-help">
+        💡 <strong>Tip:</strong> Leave fields blank if nutritional information is not available. 
+        Values will be displayed to customers when provided.
+    </div>
+    
+    <input type="hidden" name="{{ widget.name }}" id="{{ widget.attrs.id }}" />
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    function updateNutritionalInfo() {
+        const data = {};
+        const fields = ['calories', 'protein', 'carbohydrates', 'fat', 'fiber', 'sodium', 'sugar'];
+        
+        fields.forEach(field => {
+            const input = document.getElementById('{{ widget.attrs.id }}_' + field);
+            if (input && input.value.trim()) {
+                const value = parseFloat(input.value);
+                if (!isNaN(value) && value >= 0) {
+                    data[field] = value;
+                }
+            }
+        });
+        
+        document.getElementById('{{ widget.attrs.id }}').value = JSON.stringify(data);
+    }
+    
+    // Update on any change
+    const fields = ['calories', 'protein', 'carbohydrates', 'fat', 'fiber', 'sodium', 'sugar'];
+    fields.forEach(field => {
+        const input = document.getElementById('{{ widget.attrs.id }}_' + field);
+        if (input) {
+            input.addEventListener('change', updateNutritionalInfo);
+            input.addEventListener('input', updateNutritionalInfo);
+        }
+    });
+    
+    // Initial update
+    updateNutritionalInfo();
+});
+</script>
