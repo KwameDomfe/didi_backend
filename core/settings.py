@@ -230,7 +230,8 @@ DATABASES = {
         'PASSWORD': db_info.password if db_info else '',
         'HOST': db_info.hostname if db_info else '',
         'PORT': db_info.port if db_info else '',
-        'OPTIONS': {'sslmode': 'require'} if db_info else {}
+        'OPTIONS': {'sslmode': 'require'} if db_info else {},
+        'CONN_MAX_AGE': 60 if db_info else 0,  # Reuse DB connections for 60s in production
     }
 }
 
@@ -419,16 +420,25 @@ FRONTEND_URL = config('FRONTEND_URL', default='http://localhost:5173')
 ASGI_APPLICATION = 'core.asgi.application'
 
 ### Redis Configuration for Channels
-REDIS_URL = config('REDIS_URL', default='redis://127.0.0.1:6379')
+# If REDIS_URL is not set, fall back to InMemoryChannelLayer to avoid
+# connection hangs on platforms without a Redis service.
+REDIS_URL = os.environ.get('REDIS_URL') or config('REDIS_URL', default='')
 
-CHANNEL_LAYERS = {
-    'default': {
-        'BACKEND': 'channels_redis.core.RedisChannelLayer',
-        'CONFIG': {
-            'hosts': [REDIS_URL],
+if REDIS_URL:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels_redis.core.RedisChannelLayer',
+            'CONFIG': {
+                'hosts': [REDIS_URL],
+            },
         },
-    },
-}
+    }
+else:
+    CHANNEL_LAYERS = {
+        'default': {
+            'BACKEND': 'channels.layers.InMemoryChannelLayer',
+        },
+    }
 
 ### Logging Configuration
 LOGGING = {
