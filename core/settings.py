@@ -230,8 +230,16 @@ DATABASES = {
         'PASSWORD': db_info.password if db_info else '',
         'HOST': db_info.hostname if db_info else '',
         'PORT': db_info.port if db_info else '',
-        'OPTIONS': {'sslmode': 'require'} if db_info else {},
-        'CONN_MAX_AGE': 60 if db_info else 0,  # Reuse DB connections for 60s in production
+        'OPTIONS': {
+            'sslmode': 'require',
+            'connect_timeout': 10,       # Fail fast if DB unreachable
+            'keepalives': 1,             # Enable TCP keepalives
+            'keepalives_idle': 30,       # Start keepalives after 30s idle
+            'keepalives_interval': 10,   # Resend every 10s
+            'keepalives_count': 5,       # Give up after 5 failed probes
+        } if db_info else {},
+        'CONN_MAX_AGE': 60 if db_info else 0,
+        'CONN_HEALTH_CHECKS': True if db_info else False,  # Test connection before reuse
     }
 }
 
