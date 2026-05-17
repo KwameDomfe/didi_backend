@@ -7,7 +7,24 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 """
 import sys, os
 from pathlib import Path
-from decouple import Csv, UndefinedValueError, config
+from urllib.parse import urlparse
+
+# ── Environment selection ──────────────────────────────────────────────────────
+# Switch environments by setting DJANGO_ENV in your shell or CI/CD:
+#   DJANGO_ENV=development  → loads .env.development  (default)
+#   DJANGO_ENV=production   → loads .env.production
+#   DJANGO_ENV=staging      → loads .env.staging
+# OS / platform environment variables always take precedence over the file.
+from decouple import Csv, UndefinedValueError, Config, RepositoryEnv, RepositoryEmpty
+
+_env_name = os.environ.get('DJANGO_ENV', 'development')
+_env_file = Path(__file__).resolve().parent.parent / f".env.{_env_name}"
+
+if _env_file.exists():
+    config = Config(RepositoryEnv(str(_env_file)))
+else:
+    # Fall back to os-only (useful on platforms that inject env vars directly)
+    config = Config(RepositoryEmpty())
 
 
 # import dj_database_url
@@ -201,62 +218,23 @@ WSGI_APPLICATION = 'core.wsgi.application'
 ### Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# Use PostgreSQL in production (DATABASE_URL env var), SQLite locally
+DATABASE_URL = os.environ.get('DATABASE_URL')
+db_info = urlparse(DATABASE_URL) if DATABASE_URL else None
+
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql_psycopg2' if db_info else 'django.db.backends.sqlite3',
+        'NAME': db_info.path[1:] if db_info else BASE_DIR / 'db.sqlite3',
+        'USER': db_info.username if db_info else '',
+        'PASSWORD': db_info.password if db_info else '',
+        'HOST': db_info.hostname if db_info else '',
+        'PORT': db_info.port if db_info else '',
+        'OPTIONS': {'sslmode': 'require'} if db_info else {}
     }
 }
 
-def _resolve_env_value(value: str | None) -> str | None:
-    if not value:
-        return None
-    value = value.strip()
-    if value.startswith('${') and value.endswith('}'):
-        key = value[2:-1].strip()
-        return config(key, default=None)
-    return value
 
-
-POSTGRES_DB = _resolve_env_value(config('POSTGRES_DB', default=None))
-POSTGRES_PASSWORD = _resolve_env_value(config('POSTGRES_PASSWORD', default=None))
-POSTGRES_USER = _resolve_env_value(config('POSTGRES_USER', default=None))
-POSTGRES_HOST = _resolve_env_value(config('POSTGRES_HOST', default=None))
-POSTGRES_PORT_RAW = _resolve_env_value(config('POSTGRES_PORT', default=None))
-
-try:
-    POSTGRES_PORT = int(POSTGRES_PORT_RAW) if POSTGRES_PORT_RAW else None
-except ValueError:
-    POSTGRES_PORT = None
-
-POSTGRES_READY = (
-    POSTGRES_DB is not None
-    and POSTGRES_PASSWORD is not None
-    and POSTGRES_USER is not None
-    and POSTGRES_HOST is not None
-    and POSTGRES_PORT is not None
-)
-
-USE_POSTGRES = config('USE_POSTGRES', default=False, cast=bool)
-ENABLE_POSTGRES = POSTGRES_READY and (USE_POSTGRES or not DEBUG)
-
-if ENABLE_POSTGRES:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql",
-            "NAME": POSTGRES_DB,
-            "USER": POSTGRES_USER,
-            "PASSWORD": POSTGRES_PASSWORD,
-            "HOST": POSTGRES_HOST,
-            "PORT": POSTGRES_PORT,
-            "OPTIONS": {
-                "sslmode": "require",
-            },# Ensure SSL is used when connecting to managed DB services
-            # Many providers (including DigitalOcean) require or recommend SSL.
-            # Persist connections for better performance (seconds)
-            "CONN_MAX_AGE": 600,
-        }
-    }
 ### Password validation
 # https://docs.djangoproject.com/en/5.2/ref/settings/#auth-password-validators
 
@@ -481,6 +459,11 @@ LOGGING = {
         'django.request': {
             'handlers': ['console'],
             'level': 'ERROR',
+            'propagate': False,
+        },
+        'django.utils.autoreload': {
+            'handlers': ['console'],
+            'level': 'WARNING',
             'propagate': False,
         },
     },

@@ -508,7 +508,7 @@ class MenuCategoryViewSet(viewsets.ModelViewSet):
         serializer.save(restaurant=restaurant)
 
 class MenuItemViewSet(viewsets.ModelViewSet):
-    queryset = MenuItem.objects.filter(is_available=True).order_by('id')
+    queryset = MenuItem.objects.all().order_by('id')
     serializer_class = MenuItemSerializer
     permission_classes = [IsRestaurantOwnerOrAdminOrReadOnly]
     lookup_field = 'slug'
@@ -539,38 +539,21 @@ class MenuItemViewSet(viewsets.ModelViewSet):
         if obj is None:
             raise Http404("No MenuItem matches the given query.")
 
-        # Keep unavailable items hidden from anonymous/public read requests.
-        if self.request.method in permissions.SAFE_METHODS and not obj.is_available:
-            user = self.request.user
-            can_view_unavailable = (
-                user.is_authenticated and (
-                    user.is_superuser
-                    or user.is_staff
-                    or getattr(user, 'user_type', None) == 'platform_admin'
-                    or obj.restaurant.owner_id == user.id
-                )
-            )
-            if not can_view_unavailable:
-                raise Http404("No MenuItem matches the given query.")
+        # Unavailable items are always visible (frontend shows 'Unavailable' indicator)
 
         self.check_object_permissions(self.request, obj)
         return obj
     
     def get_queryset(self):
-        """Show all items to owners/admins, only available items to others"""
-        user = self.request.user
-        if user.is_authenticated and user.user_type in ['vendor', 'platform_admin']:
-            if self.action in ['list', 'retrieve']:
-                # For listing, still filter by is_available unless they own the restaurant
-                restaurant_id = self.request.query_params.get('restaurant')
-                if restaurant_id:
-                    try:
-                        restaurant = Restaurant.objects.get(id=restaurant_id)
-                        if restaurant.owner == user or user.user_type == 'platform_admin':
-                            return MenuItem.objects.filter(restaurant=restaurant).order_by('id')
-                    except Restaurant.DoesNotExist:
-                        pass
-        return MenuItem.objects.filter(is_available=True).order_by('id')
+        """Always return all items (available and unavailable) so the frontend can display them with appropriate indicators"""
+        restaurant_id = self.request.query_params.get('restaurant')
+        if restaurant_id:
+            try:
+                restaurant = Restaurant.objects.get(id=restaurant_id)
+                return MenuItem.objects.filter(restaurant=restaurant).order_by('id')
+            except Restaurant.DoesNotExist:
+                pass
+        return MenuItem.objects.all().order_by('id')
 
     @action(detail=True, methods=['post', 'delete'], permission_classes=[permissions.IsAuthenticated])
     def like(self, request, slug=None):

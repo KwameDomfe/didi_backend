@@ -1,5 +1,5 @@
 from django.core.management.base import BaseCommand
-from restaurants.models import MenuItem
+from apps.restaurants.models import MenuItem
 from collections import defaultdict
 
 class Command(BaseCommand):
