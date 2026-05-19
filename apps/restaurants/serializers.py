@@ -202,11 +202,8 @@ class RestaurantListSerializer(serializers.ModelSerializer):
         return obj.reviews.count()
 
 class MenuItemSerializer(serializers.ModelSerializer):
-
     image = serializers.ImageField(required=False, allow_null=True)
     restaurant_name = serializers.SerializerMethodField()
-    option_groups = OptionGroupSerializer(many=True, read_only=True)
-
 
     class Meta:
         model = MenuItem
@@ -214,7 +211,7 @@ class MenuItemSerializer(serializers.ModelSerializer):
             'id', 'slug', 'restaurant', 'category', 'name', 'description', 'price', 'image',
             'allergens', 'nutritional_info', 'is_available', 'is_vegetarian',
             'is_vegan', 'is_gluten_free', 'spice_level', 'prep_time',
-            'restaurant_name', 'created_at', 'updated_at', 'option_groups'
+            'restaurant_name', 'created_at', 'updated_at'
         ]
         read_only_fields = ['id', 'created_at', 'updated_at']
 
