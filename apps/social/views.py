@@ -1,13 +1,9 @@
-import json
-import time
-
-from django.http import JsonResponse, StreamingHttpResponse
+from django.http import JsonResponse
 from django.db import transaction
 from django.db.models import Exists, OuterRef, Q
 from django.utils import timezone
 from django.views.decorators.http import require_GET
 from rest_framework import viewsets, status, permissions
-from rest_framework.authtoken.models import Token
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from django_filters.rest_framework import DjangoFilterBackend
@@ -92,16 +88,6 @@ def decline_connection_request(connection_request, acting_user):
         },
     )
 
-
-def get_stream_user(request):
-    token_key = request.GET.get('token')
-    if not token_key:
-        return None
-    try:
-        token = Token.objects.select_related('user').get(key=token_key)
-    except Token.DoesNotExist:
-        return None
-    return token.user if token.user.is_authenticated else None
 
 class PostViewSet(viewsets.ModelViewSet):
     serializer_class = PostSerializer
@@ -514,32 +500,12 @@ class NotificationViewSet(viewsets.GenericViewSet):
 
 @require_GET
 def stream_notifications(request):
-    user = get_stream_user(request)
-    if user is None:
-        return JsonResponse({'error': 'Invalid or missing token'}, status=401)
-
-    def event_stream():
-        last_notification_id = 0
-        # Limit to 60 cycles (~5 min) so the WSGI thread is freed regularly.
-        # EventSource will automatically reconnect after the stream ends.
-        for _ in range(60):
-            latest_notification = Notification.objects.filter(recipient=user).order_by('-id').first()
-            unread_count = Notification.objects.filter(recipient=user, is_read=False).count()
-            latest_id = latest_notification.id if latest_notification else 0
-
-            if latest_id != last_notification_id:
-                payload = {
-                    'latest_id': latest_id,
-                    'unread_count': unread_count,
-                }
-                yield f"data: {json.dumps(payload)}\n\n"
-                last_notification_id = latest_id
-            else:
-                yield ": keep-alive\n\n"
-
-            time.sleep(5)
-
-    response = StreamingHttpResponse(event_stream(), content_type='text/event-stream')
-    response['Cache-Control'] = 'no-cache'
-    response['X-Accel-Buffering'] = 'no'
-    return response
+    # This endpoint previously used a WSGI StreamingHttpResponse with time.sleep()
+    # which is incompatible with HTTP/2 and HTTP/3 (QUIC) proxies — they terminate
+    # long-lived connections with ERR_HTTP2_PROTOCOL_ERROR / ERR_QUIC_PROTOCOL_ERROR.
+    # The frontend now uses polling instead. Return 410 Gone so any stale clients
+    # (old cached builds) stop retrying immediately rather than looping indefinitely.
+    return JsonResponse(
+        {'detail': 'SSE stream is no longer supported. Use the polling endpoint instead.'},
+        status=410,
+    )
