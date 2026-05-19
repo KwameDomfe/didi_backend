@@ -111,7 +111,7 @@ class PostViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at']
 
     def get_queryset(self):
-        return Post.objects.filter(is_public=True).select_related('user', 'restaurant', 'menu_item')
+        return Post.objects.filter(is_public=True).select_related('user', 'restaurant', 'menu_item').prefetch_related('likes', 'comments')
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
@@ -180,7 +180,7 @@ class DiningGroupViewSet(viewsets.ModelViewSet):
     ordering = ['-created_at']
 
     def get_queryset(self):
-        return DiningGroup.objects.filter(is_active=True).select_related('creator', 'restaurant')
+        return DiningGroup.objects.filter(is_active=True).select_related('creator', 'restaurant').prefetch_related('members')
 
     def perform_create(self, serializer):
         group = serializer.save(creator=self.request.user)

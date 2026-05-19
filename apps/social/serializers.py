@@ -24,14 +24,22 @@ class PostSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'user', 'created_at', 'updated_at']
 
     def get_likes_count(self, obj):
+        # Reuse prefetch cache from PostViewSet.get_queryset()
+        if hasattr(obj, '_prefetched_objects_cache') and 'likes' in obj._prefetched_objects_cache:
+            return len(obj._prefetched_objects_cache['likes'])
         return obj.likes.count()
 
     def get_comments_count(self, obj):
+        if hasattr(obj, '_prefetched_objects_cache') and 'comments' in obj._prefetched_objects_cache:
+            return len(obj._prefetched_objects_cache['comments'])
         return obj.comments.count()
 
     def get_is_liked(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
+            if hasattr(obj, '_prefetched_objects_cache') and 'likes' in obj._prefetched_objects_cache:
+                user_id = request.user.id
+                return any(like.user_id == user_id for like in obj._prefetched_objects_cache['likes'])
             return obj.likes.filter(user=request.user).exists()
         return False
 
@@ -76,9 +84,13 @@ class DiningGroupSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'creator', 'created_at']
 
     def get_members_count(self, obj):
+        # Use the prefetched members cache when available (avoids extra DB hit).
+        if hasattr(obj, '_prefetched_objects_cache') and 'members' in obj._prefetched_objects_cache:
+            return len(obj._prefetched_objects_cache['members'])
         return obj.members.count()
 
     def get_members(self, obj):
+        # all() reuses the prefetch cache set by prefetch_related('members').
         return [
             {
                 'id': str(member.id),
@@ -95,6 +107,10 @@ class DiningGroupSerializer(serializers.ModelSerializer):
     def get_is_member(self, obj):
         request = self.context.get('request')
         if request and request.user.is_authenticated:
+            # Reuse the prefetch cache instead of issuing an extra filtered query.
+            if hasattr(obj, '_prefetched_objects_cache') and 'members' in obj._prefetched_objects_cache:
+                user_id = request.user.id
+                return any(m.id == user_id for m in obj._prefetched_objects_cache['members'])
             return obj.members.filter(id=request.user.id).exists()
         return False
 
